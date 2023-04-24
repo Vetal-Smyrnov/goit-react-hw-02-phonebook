@@ -2,7 +2,7 @@ import styled from '@emotion/styled';
 import InputMask from 'react-input-mask';
 
 export const Form = styled.form`
-  border-bottom: 2px solid green;
+  border-bottom: 5px solid blue;
 `;
 
 export const InputWraper = styled.div`
@@ -14,7 +14,7 @@ export const InputWraper = styled.div`
 `;
 
 export const Input = styled(InputMask)`
-  border: 3px solid #549668;
+  border: 3px solid red;
 
   border-radius: 20px;
   padding: 5px;
@@ -31,5 +31,5 @@ export const Button = styled.button`
   padding: 10px;
   margin: 10px 0;
   border-radius: 20px;
-  background-color: #78c4c8;
+  background-color: brown;
 `;
