@@ -1,62 +1,78 @@
 import React, { Component } from 'react';
-import { Formik } from 'formik';
 import { nanoid } from 'nanoid';
-import propTypes from 'prop-types';
-import { MainForm, AddButton, FormLabel, Input } from './ContactFormStyled';
+import PropTypes from 'prop-types';
+import { Formik, ErrorMessage } from 'formik';
+import { object, string } from 'yup';
+
+import {
+  StyledForm,
+  Label,
+  StyledField,
+  ErrorStyledMessage,
+  Button,
+} from './ContactForm.styled';
+
+const numberRegex =
+  /\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}/;
+const nameRegex = /^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$/;
+const numberMessage = `Phone number must be digits and can contain spaces, dashes, parentheses and can start with +`;
+const nameMessage = `Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan`;
+
+let schema = object({
+  name: string()
+    .matches(nameRegex, {
+      message: nameMessage,
+      excludeEmptyString: true,
+    })
+    .required(),
+  number: string()
+    .matches(numberRegex, {
+      message: numberMessage,
+      excludeEmptyString: true,
+    })
+    .required(),
+});
 
 export class ContactForm extends Component {
-  handleSubmit = ({ name, number }, { resetForm }) => {
-    const nameInContacts = this.props.contacts.find(
-      contact => contact.name.toLowerCase() === name.toLowerCase()
-    );
-    if (nameInContacts) {
-      alert(`${name} is already in contacts`);
-      return;
-    }
-    const contact = { id: nanoid(), name, number };
-    this.props.onSubmit(contact);
-    resetForm();
-  };
+  // nameInputID and numberInputID should be here
+  // for them to give different IDs for multiple instances
+  // using stateless components gives same ID
+
+  nameInputID = nanoid();
+  numberInputID = nanoid();
 
   render() {
+    const { onSubmit } = this.props;
     return (
       <Formik
         initialValues={{ name: '', number: '' }}
-        onSubmit={this.handleSubmit}
+        validationSchema={schema}
+        onSubmit={onSubmit}
       >
-        <MainForm autoComplete="off">
-          <div>
-            <FormLabel htmlFor="name">Name</FormLabel>
-            <div>
-              <Input
-                type="text"
-                name="name"
-                pattern="^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
-                title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
-                required
-              />
-            </div>
-          </div>
-          <div>
-            <FormLabel htmlFor="number">Number</FormLabel>
-            <div>
-              <Input
-                type="tel"
-                name="number"
-                pattern="\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}"
-                title="Phone number must be digits and can contain spaces, dashes, parentheses and can start with +"
-                required
-              />
-            </div>
-          </div>
-          <AddButton type="submit">Add contact</AddButton>
-        </MainForm>
+        <StyledForm>
+          <Label htmlFor={this.nameInputID}>Name</Label>
+          <StyledField
+            type="text"
+            name="name"
+            placeholder="Enter the name"
+            id={this.nameInputID}
+          />
+          <ErrorMessage component={ErrorStyledMessage} name="name" />
+          <Label htmlFor={this.numberInputID}>Number</Label>
+          <StyledField
+            type="tel"
+            name="number"
+            placeholder="Enter the number"
+            id={this.numberInputID}
+          />
+          <ErrorMessage component={ErrorStyledMessage} name="number" />
+          <Button type="submit">Add Contact</Button>
+        </StyledForm>
       </Formik>
     );
   }
 }
 
 ContactForm.propTypes = {
-  onSubmit: propTypes.func.isRequired,
-  contacts: propTypes.arrayOf(propTypes.object).isRequired,
+  onSubmit: PropTypes.func.isRequired,
 };
