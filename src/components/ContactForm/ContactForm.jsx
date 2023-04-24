@@ -1,78 +1,80 @@
-import React, { Component } from 'react';
-import { nanoid } from 'nanoid';
+import { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Formik, ErrorMessage } from 'formik';
-import { object, string } from 'yup';
+import { nanoid } from 'nanoid';
+import { Form, InputWraper, Input, Button } from './ContactForm.styled';
 
-import {
-  StyledForm,
-  Label,
-  StyledField,
-  ErrorStyledMessage,
-  Button,
-} from './ContactForm.styled';
+class ContactForm extends Component {
+  state = {
+    name: '',
+    number: '',
+  };
+  handleInputChange = e => {
+    const { name, value } = e.target;
+    this.setState({ [name]: value });
+  };
 
-const numberRegex =
-  /\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}/;
-const nameRegex = /^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$/;
-const numberMessage = `Phone number must be digits and can contain spaces, dashes, parentheses and can start with +`;
-const nameMessage = `Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan`;
+  onSubmitContact = e => {
+    const { name } = this.state;
+    e.preventDefault();
+    if (this.props.contacts.find(contact => contact.name === name)) {
+      alert(`${name} is already in contacts`);
+      return;
+    }
+    this.props.onSabmit(this.state);
+    this.reset();
+  };
 
-let schema = object({
-  name: string()
-    .matches(nameRegex, {
-      message: nameMessage,
-      excludeEmptyString: true,
-    })
-    .required(),
-  number: string()
-    .matches(numberRegex, {
-      message: numberMessage,
-      excludeEmptyString: true,
-    })
-    .required(),
-});
+  nameInputId = nanoid();
+  telInputId = nanoid();
 
-export class ContactForm extends Component {
-  // nameInputID and numberInputID should be here
-  // for them to give different IDs for multiple instances
-  // using stateless components gives same ID
-
-  nameInputID = nanoid();
-  numberInputID = nanoid();
-
+  reset = () => {
+    this.setState({ name: '', number: '' });
+  };
   render() {
-    const { onSubmit } = this.props;
     return (
-      <Formik
-        initialValues={{ name: '', number: '' }}
-        validationSchema={schema}
-        onSubmit={onSubmit}
-      >
-        <StyledForm>
-          <Label htmlFor={this.nameInputID}>Name</Label>
-          <StyledField
+      <Form action="" onSubmit={this.onSubmitContact}>
+        <InputWraper>
+          <label htmlFor={this.nameInputId}>Name</label>
+          <Input
+            id={this.nameInputId}
             type="text"
+            value={this.state.name}
+            onChange={this.handleInputChange}
             name="name"
-            placeholder="Enter the name"
-            id={this.nameInputID}
+            pattern="^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
+            title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
+            required
           />
-          <ErrorMessage component={ErrorStyledMessage} name="name" />
-          <Label htmlFor={this.numberInputID}>Number</Label>
-          <StyledField
+        </InputWraper>
+        <InputWraper>
+          <label htmlFor={this.telInputId}>Number</label>
+          <Input
+            mask="999-99-99"
+            id={this.telInputId}
             type="tel"
+            value={this.state.number}
+            onChange={this.handleInputChange}
             name="number"
-            placeholder="Enter the number"
-            id={this.numberInputID}
+            pattern="\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}"
+            title="Phone number must be digits and can contain spaces, dashes, parentheses and can start with +"
+            required
           />
-          <ErrorMessage component={ErrorStyledMessage} name="number" />
-          <Button type="submit">Add Contact</Button>
-        </StyledForm>
-      </Formik>
+        </InputWraper>
+
+        <Button type="submit">Add contact</Button>
+      </Form>
     );
   }
 }
+export default ContactForm;
 
 ContactForm.propTypes = {
-  onSubmit: PropTypes.func.isRequired,
+  onSabmit: PropTypes.func.isRequired,
+  contacts: PropTypes.arrayOf(
+    PropTypes.exact({
+      id: PropTypes.string.isRequired,
+      name: PropTypes.string.isRequired,
+      number: PropTypes.string.isRequired,
+    })
+  ),
 };
